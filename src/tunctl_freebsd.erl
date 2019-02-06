@@ -41,6 +41,7 @@
         create/2,
         persist/2,
         owner/2, group/2,
+        up/3,
 
         header/1
     ]).
@@ -92,6 +93,12 @@ group(__FD, _Group) ->
 header(<<?UINT32(Proto), Buf/binary>>) ->
     {tun_pi, 0, Proto, Buf}.
 
+%% make totally silly assumption that local iterface has address x.x.x.1
+up(Dev, {A,B,C,D}, Mask) ->
+    Cmd = "sudo ifconfig " ++ binary_to_list(Dev) ++ " " ++
+                              inet_parse:ntoa({A,B,C,1}) ++ "/" ++ integer_to_list(Mask) ++ " " ++
+    inet_parse:ntoa({A,B,C,D}) ++ " " ++ "up",
+    tunctl:cmd(Cmd).
 
 %%--------------------------------------------------------------------
 %%% Internal functions

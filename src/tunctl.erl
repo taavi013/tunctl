@@ -90,6 +90,7 @@ up(Dev, {A,B,C,D}, Mask) when byte_size(Dev) < ?IFNAMSIZ, is_integer(Mask) ->
     Module = os(),
     case Module of
         tunctl_linux -> tunctl_linux:up(Dev, {A,B,C,D}, Mask);
+        tunctl_freebsd -> tunctl_freebsd:up(Dev, {A,B,C,D}, Mask);
         _ -> os_up(Dev, {A,B,C,D}, Mask)
     end;
 up(Dev, {A,B,C,D,E,F,G,H}, Mask) when byte_size(Dev) < ?IFNAMSIZ, is_integer(Mask) ->
