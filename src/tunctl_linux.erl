@@ -47,6 +47,7 @@
 -define(SIOCGIFFLAGS, 16#8913).
 -define(SIOCSIFFLAGS, 16#8914).
 -define(SIOCSIFADDR, 16#8916).
+-define(SIOCSIFDSTADDR, 16#8918).
 
 -define(TUNDEV, "net/tun").
 
@@ -107,8 +108,12 @@ up(Dev, {A,B,C,D}, _Mask) when byte_size(Dev) < ?IFNAMSIZ ->
     % dev[IFNAMSIZ], family:2 bytes, port:2 bytes, ipaddr:4 bytes
     Ifr = <<Dev/bytes, 0:( (?IFNAMSIZ - byte_size(Dev) - 1)*8), 0:8,
         ?PF_INET:16/native, 0:16, A:8, B:8, C:8, D:8, 0:(8*8)>>,
+    % assume, source addr is x.x.x.1
+    IfrS = <<Dev/bytes, 0:( (?IFNAMSIZ - byte_size(Dev) - 1)*8), 0:8,
+        ?PF_INET:16/native, 0:16, A:8, B:8, C:8, 1:8, 0:(8*8)>>,
 
-    Res = try ok = tunctl:ioctl(Socket, ?SIOCSIFADDR, Ifr),
+    Res = try ok = tunctl:ioctl(Socket, ?SIOCSIFADDR, IfrS),
+        ok = tunctl:ioctl(Socket, ?SIOCSIFDSTADDR, Ifr),
         {ok, Flag} = get_flag(Socket, Dev),
         ok = set_flag(Socket, Dev, Flag bor ?IFF_RUNNING bor ?IFF_UP) of
         _ -> ok
